@@ -22,7 +22,8 @@ const Home = () => {
           className={styles.rock_hand}
         />
         <div className={styles.btn_container}>
-          <Button name="play with friend" type="friend" />
+          <Button name="Play with AI" type="ai" />
+          <Button name="Play with friend" type="friend" />
           <Button name="Play with stranger" type="stranger" />
         </div>
       </div>
