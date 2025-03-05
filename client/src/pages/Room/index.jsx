@@ -1,54 +1,125 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useContext, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { SocketContext } from "../../context/SocketContext";
-import Button from "../../components/Button";
-import win_background_img from "../../images/win_background.png";
-import rock_left_hand_img from "../../images/rock_left_hand.png";
-import scissors_right_hand_img from "../../images/scissors_right_hand.png";
-import win_board_img from "../../images/win_board.png";
-import lose_board_1_img from "../../images/lose_board_1.png";
-import lose_board_2_img from "../../images/lose_board_2.png";
-import lose_board_3_img from "../../images/lose_board_3.png";
+import PlayerOne from "../../components/PlayerOne";
+import PlayerTwo from "../../components/PlayerTwo";
+import Controls from "../../components/Controls";
+import vs_img from "../../images/vs.jpg";
+import win_img from "../../images/win.png";
+import lose_img from "../../images/lose.png";
+import boom_img from "../../images/boom.png";
 import styles from "./styles.module.css";
 
-const Result = () => {
-  const [boardImg, setBoardImg] = useState("");
-  const { room, player_1 } = useContext(SocketContext);
+const Room = () => {
+  const [result, setResult] = useState({
+    rotate: 0,
+    show: false,
+    reset: false,
+  });
+  const [resultText, setResultText] = useState("");
+  const { socket, room, player_1, player_2 } = useContext(SocketContext);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    let score = room.players[player_1].score;
+    let roomId = location.pathname.split("/")[2];
+    let size = Object.keys(socket).length;
 
-    if (score === 3) setBoardImg(win_board_img);
-    else if (score === 2) setBoardImg(lose_board_2_img);
-    else if (score === 1) setBoardImg(lose_board_1_img);
-    else setBoardImg(lose_board_3_img);
-  }, []);
+    if (size > 0) {
+      socket.emit("room:join", { roomId }, (err, room) => {
+        if (err) navigate("/");
+      });
+    }
+  }, [socket]);
+
+  useEffect(() => {
+    const calculateResults = async () => {
+      const players = room?.players;
+      if (
+        players &&
+        players[player_1]?.optionLock === true &&
+        players[player_2]?.optionLock === true
+      ) {
+        let result = { score: [0, 0], text: "tie" };
+        if (players[player_1].option !== players[player_2].option) {
+          result = validateOptions(
+            `${players[player_1].option} ${players[player_2].option}`
+          );
+        }
+
+        room.players[player_1].score += result.score[0];
+        room.players[player_2].score += result.score[1];
+
+        await performAnimation(result.text);
+
+        room.players[player_1].optionLock = false;
+        room.players[player_2].optionLock = false;
+
+        socket.emit("room:update", room);
+      }
+    };
+    calculateResults();
+  }, [room, socket, player_1, player_2]);
+
+  const validateOptions = (value) => {
+    switch (value) {
+      case "rock paper":
+        return { score: [0, 1], text: "lose" };
+      case "paper scissors":
+        return { score: [0, 1], text: "lose" };
+      case "scissors rock":
+        return { score: [0, 1], text: "lose" };
+      case "paper rock":
+        return { score: [1, 0], text: "win" };
+      case "scissors paper":
+        return { score: [1, 0], text: "win" };
+      case "rock scissors":
+        return { score: [1, 0], text: "win" };
+      default:
+        return { score: [0, 0], text: "tie" };
+    }
+  };
+
+  const performAnimation = async (text) => {
+    const timer = (ms) => new Promise((res) => setTimeout(res, ms));
+
+    for (let i = 0; i <= 8; i++) {
+      if (i === 7) {
+        setResult({ rotate: 0, show: true, reset: false });
+        setResultText(text);
+        await timer(2000);
+      } else if (i % 2 === 0 && i < 7) {
+        setResult({ rotate: 10, show: false, reset: false });
+        await timer(200);
+      } else if (i === 8) {
+        setResult({ rotate: 0, show: false, reset: true });
+        setResultText("");
+      } else {
+        setResult({ rotate: -10, show: false, reset: false });
+        await timer(200);
+      }
+    }
+
+    return Promise.resolve();
+  };
 
   return (
-    <div className={styles.container}>
-      {boardImg === win_board_img && (
-        <img
-          src={win_background_img}
-          alt="win_background_img"
-          className={styles.win_background_img}
-        />
+    <>
+      <img src={vs_img} alt="vs" className={styles.background_img} />
+      <PlayerOne result={result} />
+      <PlayerTwo result={result} />
+      {player_2 && <Controls />}
+      {resultText === "win" && (
+        <img src={win_img} alt="win_img" className={styles.win_img} />
       )}
-      <img
-        src={rock_left_hand_img}
-        alt="rock_left_hand_img"
-        className={styles.rock_hand}
-      />
-      <img
-        src={scissors_right_hand_img}
-        alt="scissors_right_hand_img"
-        className={styles.scissors_hand}
-      />
-      <img src={boardImg} alt="boardImg" className={styles.board_img} />
-      <div className={styles.btn_container}>
-        <Button name="play with friend" type="friend" />
-        <Button name="Play with stranger" type="stranger" />
-      </div>
-    </div>
+      {resultText === "lose" && (
+        <img src={lose_img} alt="lose_img" className={styles.lose_img} />
+      )}
+      {resultText === "tie" && (
+        <img src={boom_img} alt="boom_img" className={styles.boom_img} />
+      )}
+    </>
   );
 };
 
-export default Result;
+export default Room;
