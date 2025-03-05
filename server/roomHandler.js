@@ -2,7 +2,7 @@ const shortId = require("shortid");
 
 const roomHandler = (io, socket, rooms) => {
   const create = (payload, callback) => {
-    if (payload.type === "player") {
+    if (payload.type === "stranger") {
       const index = rooms.findIndex(
         (room) => room.vacant === true && room.private === false
       );
@@ -56,6 +56,7 @@ const roomHandler = (io, socket, rooms) => {
       callback(null, room.roomId);
     }
   };
+
   const join = (payload, callback) => {
     const index = rooms.findIndex((room) => room.roomId === payload.roomId);
     if (index >= 0) {
