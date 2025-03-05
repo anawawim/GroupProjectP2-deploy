@@ -1,16 +1,17 @@
+const dotenv = require("dotenv");
 const express = require("express");
-const app = express();
-const port = 3000;
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const roomHandler = require("./roomHandler");
 
-const server = createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: ["http://localhost:5173"],
-  },
+dotenv.config();
+const app = express();
+
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: { origin: "*" },
 });
+
 const rooms = [];
 
 io.on("connection", (socket) => {
@@ -22,6 +23,5 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(port, () => {
-  console.log(`Listening on port ${port}`);
-});
+const port = process.env.PORT || 8080;
+httpServer.listen(port, () => console.log(`Listening on port ${port}`));
