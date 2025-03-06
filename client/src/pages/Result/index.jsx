@@ -44,6 +44,7 @@ const Result = () => {
       />
       <img src={boardImg} alt="boardImg" className={styles.board_img} />
       <div className={styles.btn_container}>
+        <Button name="play with ai" type="ai" />
         <Button name="play with friend" type="friend" />
         <Button name="Play with stranger" type="stranger" />
       </div>
