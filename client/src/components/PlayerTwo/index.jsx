@@ -31,7 +31,7 @@ const PlayerTwo = ({ result }) => {
     <div className={styles.container}>
       {!player_2 && room.type === "friend" && (
         <JoinLink
-          link={`${process.env.DEPLOY_CLIENT_URL}room/${room.roomId}`}
+          link={`https://srp-nine.vercel.app/room/${room.roomId}`}
         />
       )}
       {!player_2 && (
