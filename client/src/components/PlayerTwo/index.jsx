@@ -31,7 +31,7 @@ const PlayerTwo = ({ result }) => {
     <div className={styles.container}>
       {!player_2 && room.type === "friend" && (
         <JoinLink
-          link={`${process.env.REACT_APP_BASE_URL}room/${room.roomId}`}
+          link={`${process.env.DEPLOY_CLIENT_URL}room/${room.roomId}`}
         />
       )}
       {!player_2 && (
