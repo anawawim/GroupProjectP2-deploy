@@ -4,6 +4,7 @@ import { SocketContext } from "../../context/SocketContext";
 import PlayerOne from "../../components/PlayerOne";
 import PlayerTwo from "../../components/PlayerTwo";
 import Controls from "../../components/Controls";
+import GameMusic from "../../components/GameMusic";
 import vs_img from "../../images/vs.jpg";
 import win_img from "../../images/win.png";
 import lose_img from "../../images/lose.png";
@@ -109,6 +110,7 @@ const Room = () => {
       <PlayerOne result={result} />
       <PlayerTwo result={result} />
       {player_2 && <Controls />}
+      <GameMusic />
       {resultText === "win" && (
         <img src={win_img} alt="win_img" className={styles.win_img} />
       )}
